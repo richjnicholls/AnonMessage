@@ -3,20 +3,32 @@ import { ReactiveVar } from 'meteor/reactive-var';
 
 import './main.html';
 
-Template.hello.onCreated(function helloOnCreated() {
-  // counter starts at 0
-  this.counter = new ReactiveVar(0);
-});
+Messages = new Mongo.Collection('messages');
 
-Template.hello.helpers({
-  counter() {
-    return Template.instance().counter.get();
-  },
-});
+if(Meteor.isClient) {
+	Template.listing.helpers({
+		entries: function() {
+			return Messages.find();
+		}
+	});
 
-Template.hello.events({
-  'click button'(event, instance) {
-    // increment the counter when button is clicked
-    instance.counter.set(instance.counter.get() + 1);
-  },
-});
+	Template.newEntry.events ({
+		'submit #entryForm': function(event){
+			//prevent form submission
+			event.defaultPrevented();
+
+			var c = event.target.querySelector('#content').value;
+
+			//insert into the collection
+			Messages.insert({content: c, date: new Date() });
+
+			event.target.reset();
+		}
+	});
+}
+
+if (Meteor.isServer) {
+	Meteor.startup(function(){
+
+	});
+}
